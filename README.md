@@ -32,13 +32,22 @@ cd portfolio-screenshot-tool
 npm install
 ```
 
-3. **Set up environment variables** (optional, required for AI analysis)
+3. **Set up environment variables**
 ```bash
-# Option 1: Export environment variable
-export OPENAI_API_KEY="your-openai-api-key-here"
+# Copy example environment file
+cp example.env .env
 
-# Option 2: Create .env file
-echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+# Edit .env file with your actual values
+# Required for CLI analysis and API server:
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Required for API server:
+API_KEY=your-secure-api-key-here
+JWT_SECRET=your-jwt-secret-key-here
+
+# Optional:
+REPLICATE_API_TOKEN=your-replicate-api-token-here
+PORT=3000
 ```
 
 4. **Create URLs file**
@@ -53,7 +62,9 @@ https://your-website.com" > urls.txt
 
 ## 🎯 Usage
 
-### Basic Commands
+### 🖥️ Command Line Interface
+
+#### Basic Commands
 
 ```bash
 # Take screenshots only (no AI analysis needed)
@@ -66,32 +77,148 @@ node screenshot.js --analyze
 node screenshot.js --screenshots --analyze
 ```
 
-### Command Line Options
+#### NPM Scripts
+
+```bash
+# Using npm scripts (easier)
+npm run screenshot          # Take screenshots only
+npm run analyze            # Analyze existing screenshots
+npm run full              # Screenshots + analysis
+```
+
+#### Command Line Options
 
 | Option | Description |
 |--------|-------------|
 | `--screenshots` | Take screenshots of all websites in urls.txt |
 | `--analyze` | Analyze homepage screenshots with AI (requires OpenAI API key) |
 
-### Examples
+### 🌐 API Server
+
+Start the API server for remote access and integrations:
 
 ```bash
-# Complete workflow: capture + analyze
-node screenshot.js --screenshots --analyze
+# Start API server
+npm start
+# or
+node api-server.js
 
-# Just capture screenshots for later analysis
-node screenshot.js --screenshots
+# Development mode
+npm run dev
+```
 
-# Analyze previously captured screenshots
-export OPENAI_API_KEY="sk-..."
-node screenshot.js --analyze
+#### API Endpoints
 
-# Show help and usage information
-node screenshot.js
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `POST /api/auth/token` | POST | Generate JWT access token |
+| `POST /api/screenshot` | POST | Process websites (screenshots/analysis) |
+| `GET /api/job/:jobId` | GET | Check job status and results |
+| `GET /api/jobs` | GET | List recent jobs |
+| `GET /api/docs` | GET | API documentation |
+| `GET /health` | GET | Server health check |
+
+#### API Authentication
+
+1. **Get Access Token**:
+```bash
+curl -X POST http://localhost:3000/api/auth/token \
+  -H "x-api-key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "your-user-id", "expiresIn": "24h"}'
+```
+
+2. **Use Token for API Calls**:
+```bash
+curl -X POST http://localhost:3000/api/screenshot \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "screenshots": true,
+    "analyze": true,
+    "urls": ["https://example.com", "https://github.com"]
+  }'
+```
+
+#### API Request Examples
+
+**Process Multiple URLs (Array Format)**:
+```json
+{
+  "screenshots": true,
+  "analyze": true,
+  "urls": [
+    "https://example.com",
+    "https://github.com",
+    "https://stackoverflow.com"
+  ]
+}
+```
+
+**Process URLs (Comma-Separated)**:
+```json
+{
+  "screenshots": true,
+  "analyze": false,
+  "urls": "https://example.com,https://github.com,https://stackoverflow.com"
+}
+```
+
+**Process URLs (Newline-Separated)**:
+```json
+{
+  "screenshots": false,
+  "analyze": true,
+  "urls": "https://example.com\nhttps://github.com\nhttps://stackoverflow.com"
+}
+```
+
+#### API Response Format
+
+```json
+{
+  "success": true,
+  "jobId": "job_1673123456_abc123",
+  "message": "Processing started",
+  "validUrls": ["https://example.com", "https://github.com"],
+  "invalidUrls": [],
+  "options": {
+    "screenshots": true,
+    "analyze": true,
+    "urlCount": 2
+  },
+  "estimatedTime": "60 seconds"
+}
+```
+
+#### Check Job Status
+
+```bash
+curl -H "Authorization: Bearer your-jwt-token" \
+  http://localhost:3000/api/job/job_1673123456_abc123
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "status": "completed",
+  "results": {
+    "jobId": "job_1673123456_abc123",
+    "completedAt": "2024-01-15T10:30:45.000Z",
+    "results": [...],
+    "summary": {
+      "totalUrls": 2,
+      "successful": 2,
+      "failed": 0
+    }
+  }
+}
 ```
 
 ## 📁 Output Structure
 
+### CLI Mode Output
 ```
 screenshots/
 ├── example-com/
@@ -106,6 +233,23 @@ screenshots/
 │   └── github-com_analysis_2024-01-15.txt
 ├── report_1673123456.json                 # Detailed JSON report
 └── report_1673123456.csv                  # CSV report for spreadsheets
+```
+
+### API Mode Output
+```
+screenshots/
+├── api-results/
+│   ├── job_1673123456_abc123.json         # 🆕 API Job Results
+│   ├── job_1673123789_def456.json         # 🆕 API Job Results
+│   └── job_1673123999_ghi789.json         # 🆕 API Job Results
+├── example-com/
+│   ├── home_full_1673123456.jpg           # Homepage full screenshot
+│   ├── home_viewport_1673123456.jpg       # Homepage viewport screenshot
+│   └── example-com_analysis_2024-01-15.txt # 🤖 AI Analysis Report (API Generated)
+└── github-com/
+    ├── home_full_1673123456.jpg
+    ├── home_viewport_1673123456.jpg
+    └── github-com_analysis_2024-01-15.txt
 ```
 
 ## ⚙️ Configuration
