@@ -266,6 +266,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Questions**: Check existing issues or create a new one
 - **Feature Requests**: Open an issue with the `enhancement` label
 
+## 📞 Contact Us
+
+If you need any help, contact at:
+
+- 📱 **WhatsApp**: [+92-333-8238308](https://wa.me/923338238308)
+- 💼 **LinkedIn**: [https://www.linkedin.com/in/muneebarif11/](https://www.linkedin.com/in/muneebarif11/)
+- 📧 **Email**: [muneebarif11@gmail.com](mailto:muneebarif11@gmail.com)
+
 ## 🎯 Use Cases
 
 - **Portfolio Documentation**: Capture your work for presentations
