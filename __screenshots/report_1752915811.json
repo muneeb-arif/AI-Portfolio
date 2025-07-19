@@ -1,0 +1,58 @@
+[
+  {
+    "url": "https://oso.nyc/",
+    "fullPageFile": "screenshots/oso/home_full_1752915599.jpg",
+    "viewportFile": "screenshots/oso/home_viewport_1752915599.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/about-us/",
+    "fullPageFile": "screenshots/oso/about_us_full_1752915622.jpg",
+    "viewportFile": "screenshots/oso/about_us_viewport_1752915622.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/services/",
+    "fullPageFile": "screenshots/oso/services_full_1752915638.jpg",
+    "viewportFile": "screenshots/oso/services_viewport_1752915638.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/portfolio/",
+    "fullPageFile": "screenshots/oso/portfolio_full_1752915660.jpg",
+    "viewportFile": "screenshots/oso/portfolio_viewport_1752915660.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc//free-quote/",
+    "fullPageFile": "screenshots/oso/free_quote_full_1752915679.jpg",
+    "viewportFile": "screenshots/oso/free_quote_viewport_1752915679.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/contact-us/",
+    "fullPageFile": "screenshots/oso/contact_us_full_1752915700.jpg",
+    "viewportFile": "screenshots/oso/contact_us_viewport_1752915700.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/privacy-policy/",
+    "fullPageFile": "screenshots/oso/privacy_policy_full_1752915716.jpg",
+    "viewportFile": "screenshots/oso/privacy_policy_viewport_1752915716.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  },
+  {
+    "url": "https://oso.nyc/terms-and-services/",
+    "fullPageFile": "screenshots/oso/terms_and_services_full_1752915730.jpg",
+    "viewportFile": "screenshots/oso/terms_and_services_viewport_1752915730.jpg",
+    "aiAnalysis": null,
+    "customImage": null
+  }
+]

@@ -14,7 +14,7 @@ const { URL } = require('url');
 // Import Figma API functions
 let figmaApiModule = null;
 try {
-  figmaApiModule = require('./figma-api');
+  figmaApiModule = require('./figma-api-capture');
 } catch (e) {
   console.log('⚠️ Figma API module not available');
 }
@@ -98,7 +98,7 @@ async function takeFigmaScreenshot(browser, url, saveDir, config = DEFAULT_CONFI
   if (figmaApiModule && process.env.FIGMA_PERSONAL_TOKEN) {
     console.log(`   🔑 Attempting Figma API method...`);
     try {
-      const apiResult = await figmaApiModule.captureFigmaViaAPI(url, saveDir);
+      const apiResult = await figmaApiModule.captureFigma(url, saveDir);
       if (apiResult.success) {
         console.log(`   ✅ Figma screenshot captured via API`);
         return {
