@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
   AppBar,
   Toolbar,
   Typography,
@@ -13,112 +10,82 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  IconButton,
   Container,
   Paper,
   Tabs,
   Tab,
-  IconButton,
-  useMediaQuery,
+  Divider,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
 } from '@mui/material';
 import {
+  Menu as MenuIcon,
   Web as WebIcon,
   Brush as FigmaIcon,
   PhoneAndroid as StoreIcon,
-  Brightness4,
-  Brightness7,
-  Menu as MenuIcon,
+  BugReport as LogIcon,
 } from '@mui/icons-material';
 import WebScreenshots from './components/WebScreenshots';
 import FigmaScreenshots from './components/FigmaScreenshots';
 import StoreScreenshots from './components/StoreScreenshots';
 import ResultsPanel from './components/ResultsPanel';
+import LiveLogs from './components/LiveLogs';
 
 const drawerWidth = 240;
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`screenshot-tabpanel-${index}`}
-      aria-labelledby={`screenshot-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+// Create theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#2196f3',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+        },
+      },
+    },
+  },
+});
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [tabValue, setTabValue] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const isMobile = useMediaQuery('(max-width:768px)');
-
-  const theme = createTheme({
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-      primary: {
-        main: '#2196f3',
-      },
-      secondary: {
-        main: '#f50057',
-      },
-      background: {
-        default: darkMode ? '#121212' : '#f5f5f5',
-        paper: darkMode ? '#1e1e1e' : '#ffffff',
-      },
-    },
-    typography: {
-      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-      h4: {
-        fontWeight: 600,
-      },
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            borderRadius: 8,
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-          },
-        },
-      },
-    },
-  });
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  const handleThemeToggle = () => {
-    setDarkMode(!darkMode);
+    setActiveTab(newValue);
   };
 
   const handleResultsUpdate = (newResults: any[]) => {
-    setResults(newResults);
+    setResults(prev => [...prev, ...newResults]);
   };
 
   const handleProcessingChange = (processing: boolean) => {
@@ -128,13 +95,14 @@ function App() {
   const drawer = (
     <Box>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
-          📸 Screenshot Tool
+        <Typography variant="h6" noWrap component="div">
+          Portfolio Tool
         </Typography>
       </Toolbar>
+      <Divider />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => setTabValue(0)} selected={tabValue === 0}>
+          <ListItemButton onClick={() => setActiveTab(0)} selected={activeTab === 0}>
             <ListItemIcon>
               <WebIcon />
             </ListItemIcon>
@@ -142,7 +110,7 @@ function App() {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => setTabValue(1)} selected={tabValue === 1}>
+          <ListItemButton onClick={() => setActiveTab(1)} selected={activeTab === 1}>
             <ListItemIcon>
               <FigmaIcon />
             </ListItemIcon>
@@ -150,7 +118,7 @@ function App() {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => setTabValue(2)} selected={tabValue === 2}>
+          <ListItemButton onClick={() => setActiveTab(2)} selected={activeTab === 2}>
             <ListItemIcon>
               <StoreIcon />
             </ListItemIcon>
@@ -161,6 +129,34 @@ function App() {
     </Box>
   );
 
+  const renderActiveComponent = () => {
+    switch (activeTab) {
+      case 0:
+        return (
+          <WebScreenshots
+            onResultsUpdate={handleResultsUpdate}
+            onProcessingChange={handleProcessingChange}
+          />
+        );
+      case 1:
+        return (
+          <FigmaScreenshots
+            onResultsUpdate={handleResultsUpdate}
+            onProcessingChange={handleProcessingChange}
+          />
+        );
+      case 2:
+        return (
+          <StoreScreenshots
+            onResultsUpdate={handleResultsUpdate}
+            onProcessingChange={handleProcessingChange}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -168,8 +164,8 @@ function App() {
         <AppBar
           position="fixed"
           sx={{
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            ml: { sm: `${drawerWidth}px` },
+            width: { md: `calc(100% - ${drawerWidth}px)` },
+            ml: { md: `${drawerWidth}px` },
           }}
         >
           <Toolbar>
@@ -178,22 +174,19 @@ function App() {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
+              sx={{ mr: 2, display: { md: 'none' } }}
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" noWrap component="div">
               Portfolio Screenshot Tool
             </Typography>
-            <IconButton color="inherit" onClick={handleThemeToggle}>
-              {darkMode ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
           </Toolbar>
         </AppBar>
 
         <Box
           component="nav"
-          sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+          sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
         >
           <Drawer
             variant="temporary"
@@ -203,7 +196,7 @@ function App() {
               keepMounted: true,
             }}
             sx={{
-              display: { xs: 'block', sm: 'none' },
+              display: { xs: 'block', md: 'none' },
               '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
             }}
           >
@@ -212,7 +205,7 @@ function App() {
           <Drawer
             variant="permanent"
             sx={{
-              display: { xs: 'none', sm: 'block' },
+              display: { xs: 'none', md: 'block' },
               '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
             }}
             open
@@ -226,59 +219,51 @@ function App() {
           sx={{
             flexGrow: 1,
             p: 3,
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
+            width: { md: `calc(100% - ${drawerWidth}px)` },
             mt: 8,
           }}
         >
-          <Container maxWidth="xl">
-            <Paper elevation={2} sx={{ mb: 3 }}>
+          <Container maxWidth="lg">
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h4" component="h1" gutterBottom>
+                Portfolio Screenshot Tool
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Capture screenshots and analyze web pages, Figma designs, and app store listings
+              </Typography>
+            </Box>
+
+            {/* Live Logs Component */}
+            <LiveLogs isProcessing={isProcessing} />
+
+            {/* Mobile Tabs */}
+            <Paper sx={{ display: { xs: 'block', md: 'none' }, mb: 3 }}>
               <Tabs
-                value={tabValue}
+                value={activeTab}
                 onChange={handleTabChange}
-                aria-label="screenshot tabs"
+                variant="fullWidth"
                 sx={{ borderBottom: 1, borderColor: 'divider' }}
               >
-                <Tab
-                  icon={<WebIcon />}
-                  label="Web Screenshots"
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<FigmaIcon />}
-                  label="Figma Screenshots"
-                  iconPosition="start"
-                />
-                <Tab
-                  icon={<StoreIcon />}
-                  label="App Store Screenshots"
-                  iconPosition="start"
-                />
+                <Tab icon={<WebIcon />} label="Web" />
+                <Tab icon={<FigmaIcon />} label="Figma" />
+                <Tab icon={<StoreIcon />} label="Store" />
               </Tabs>
             </Paper>
 
-            <TabPanel value={tabValue} index={0}>
-              <WebScreenshots
-                onResultsUpdate={handleResultsUpdate}
-                onProcessingChange={handleProcessingChange}
-              />
-            </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <FigmaScreenshots
-                onResultsUpdate={handleResultsUpdate}
-                onProcessingChange={handleProcessingChange}
-              />
-            </TabPanel>
-            <TabPanel value={tabValue} index={2}>
-              <StoreScreenshots
-                onResultsUpdate={handleResultsUpdate}
-                onProcessingChange={handleProcessingChange}
-              />
-            </TabPanel>
+            {/* Desktop Content */}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+              {renderActiveComponent()}
+            </Box>
 
-            <ResultsPanel
-              results={results}
-              isProcessing={isProcessing}
-            />
+            {/* Mobile Content */}
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              {renderActiveComponent()}
+            </Box>
+
+            {/* Results Panel */}
+            {results.length > 0 && (
+              <ResultsPanel results={results} isProcessing={isProcessing} />
+            )}
           </Container>
         </Box>
       </Box>
