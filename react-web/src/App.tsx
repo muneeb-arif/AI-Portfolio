@@ -75,6 +75,13 @@ function App() {
   const [activeTab, setActiveTab] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+
+  // Generate session ID on app mount
+  React.useEffect(() => {
+    const newSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    setSessionId(newSessionId);
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -136,6 +143,7 @@ function App() {
           <WebScreenshots
             onResultsUpdate={handleResultsUpdate}
             onProcessingChange={handleProcessingChange}
+            sessionId={sessionId}
           />
         );
       case 1:
@@ -143,6 +151,7 @@ function App() {
           <FigmaScreenshots
             onResultsUpdate={handleResultsUpdate}
             onProcessingChange={handleProcessingChange}
+            sessionId={sessionId}
           />
         );
       case 2:
@@ -150,6 +159,7 @@ function App() {
           <StoreScreenshots
             onResultsUpdate={handleResultsUpdate}
             onProcessingChange={handleProcessingChange}
+            sessionId={sessionId}
           />
         );
       default:

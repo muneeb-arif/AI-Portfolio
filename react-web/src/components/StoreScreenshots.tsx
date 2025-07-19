@@ -31,11 +31,13 @@ import axios from 'axios';
 interface StoreScreenshotsProps {
   onResultsUpdate: (results: any[]) => void;
   onProcessingChange: (processing: boolean) => void;
+  sessionId?: string;
 }
 
 const StoreScreenshots: React.FC<StoreScreenshotsProps> = ({
   onResultsUpdate,
   onProcessingChange,
+  sessionId,
 }) => {
   const [urlsText, setUrlsText] = useState('');
   const [analyze, setAnalyze] = useState(false);
@@ -77,6 +79,7 @@ const StoreScreenshots: React.FC<StoreScreenshotsProps> = ({
         urls: validUrls,
         analyze,
         capture,
+        sessionId,
       });
 
       onResultsUpdate(response.data.results || []);

@@ -19,6 +19,7 @@ import {
   BugReport as LogIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { config } from '../config';
 
 interface LogEntry {
   type: 'log' | 'connection';
@@ -36,6 +37,7 @@ const LiveLogs: React.FC<LiveLogsProps> = ({ isProcessing }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
+  const [sessionId, setSessionId] = useState<string>('');
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -48,20 +50,31 @@ const LiveLogs: React.FC<LiveLogsProps> = ({ isProcessing }) => {
     scrollToBottom();
   }, [logs]);
 
+  // Generate session ID on component mount
+  useEffect(() => {
+    const newSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    setSessionId(newSessionId);
+  }, []);
+
   // Connect to log stream when component mounts
   useEffect(() => {
-    connectToLogStream();
+    if (sessionId) {
+      connectToLogStream();
+    }
     
     // Cleanup on unmount
     return () => {
       disconnectFromLogStream();
     };
-  }, []);
+  }, [sessionId]);
 
   const testConnection = async () => {
     try {
       console.log('🧪 Testing connection to backend...');
-      const response = await fetch('/health');
+      const healthUrl = config.getApiUrl('/health');
+      const sseUrl = config.getSseUrl(sessionId);
+      
+      const response = await fetch(healthUrl);
       const data = await response.json();
       console.log('🏥 Health check response:', data);
       
@@ -74,7 +87,7 @@ const LiveLogs: React.FC<LiveLogsProps> = ({ isProcessing }) => {
 
       // Test SSE connection manually
       console.log('🧪 Testing SSE connection manually...');
-      const sseResponse = await fetch('/api/logs');
+      const sseResponse = await fetch(sseUrl);
       console.log('📡 SSE response status:', sseResponse.status);
       console.log('📡 SSE response headers:', Object.fromEntries(sseResponse.headers.entries()));
       
@@ -107,9 +120,14 @@ const LiveLogs: React.FC<LiveLogsProps> = ({ isProcessing }) => {
   const connectToLogStream = () => {
     console.log('🔗 Attempting to connect to log stream...');
     try {
-      const eventSource = new EventSource('http://localhost:9000/api/logs');
+      // Use config helper for server URL
+      const logUrl = config.getSseUrl(sessionId);
+      
+      const eventSource = new EventSource(logUrl);
       console.log('📡 EventSource created:', eventSource);
       console.log('📡 EventSource readyState:', eventSource.readyState);
+      console.log('🆔 Session ID:', sessionId);
+      console.log('🌐 Server URL:', config.apiUrl || 'Using proxy');
       
       // Add more detailed event listeners
       eventSource.onopen = (event) => {
@@ -131,6 +149,7 @@ const LiveLogs: React.FC<LiveLogsProps> = ({ isProcessing }) => {
           console.log('📋 Parsed log data:', data);
           if (data.type === 'connection') {
             setIsConnected(true);
+            console.log('🆔 Session ID from server:', data.sessionId);
           } else if (data.type === 'log') {
             addLog({
               ...data,

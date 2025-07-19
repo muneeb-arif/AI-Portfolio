@@ -26,8 +26,32 @@ const API_CONFIG = {
 };
 
 // API-specific wrapper functions
-async function takeScreenshotAPI(browser, url, saveDir) {
-  return await takeScreenshot(browser, url, saveDir, API_CONFIG);
+async function takeScreenshotAPI(browser, url, saveDir, logCallback = null) {
+  // Create a logging function that sends to both console and SSE
+  const enhancedLog = (message, level = 'info') => {
+    console.log(message);
+    if (logCallback) {
+      logCallback({ type: 'log', message, level });
+    }
+  };
+
+  // Override console.log temporarily to capture all logs
+  const originalConsoleLog = console.log;
+  console.log = (...args) => {
+    const message = args.join(' ');
+    originalConsoleLog(message);
+    if (logCallback && message.includes('   ')) { // Only capture detailed logs (indented ones)
+      logCallback({ type: 'log', message, level: 'info' });
+    }
+  };
+
+  try {
+    const result = await takeScreenshot(browser, url, saveDir, API_CONFIG);
+    return result;
+  } finally {
+    // Restore original console.log
+    console.log = originalConsoleLog;
+  }
 }
 
 async function analyzeHomepageScreenshotAPI(url, screenshotPath) {

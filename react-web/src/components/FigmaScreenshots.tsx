@@ -27,11 +27,13 @@ import axios from 'axios';
 interface FigmaScreenshotsProps {
   onResultsUpdate: (results: any[]) => void;
   onProcessingChange: (processing: boolean) => void;
+  sessionId?: string;
 }
 
 const FigmaScreenshots: React.FC<FigmaScreenshotsProps> = ({
   onResultsUpdate,
   onProcessingChange,
+  sessionId,
 }) => {
   const [urlsText, setUrlsText] = useState('');
   const [analyze, setAnalyze] = useState(false);
@@ -72,6 +74,7 @@ const FigmaScreenshots: React.FC<FigmaScreenshotsProps> = ({
         urls: validUrls,
         analyze,
         capture,
+        sessionId,
       });
 
       onResultsUpdate(response.data.results || []);

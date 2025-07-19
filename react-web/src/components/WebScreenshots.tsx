@@ -28,11 +28,13 @@ import axios from 'axios';
 interface WebScreenshotsProps {
   onResultsUpdate: (results: any[]) => void;
   onProcessingChange: (processing: boolean) => void;
+  sessionId?: string;
 }
 
 const WebScreenshots: React.FC<WebScreenshotsProps> = ({
   onResultsUpdate,
   onProcessingChange,
+  sessionId,
 }) => {
   const [urlsText, setUrlsText] = useState('');
   const [analyze, setAnalyze] = useState(false);
@@ -75,6 +77,7 @@ const WebScreenshots: React.FC<WebScreenshotsProps> = ({
         analyze,
         deep_capture: deepCapture,
         capture,
+        sessionId,
       });
 
       onResultsUpdate(response.data.results || []);
