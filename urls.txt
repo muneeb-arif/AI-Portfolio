@@ -1,3 +1,11 @@
-https://theexpertways.com/
+# web
 #https://muneeb.theexpertways.com/
-https://oso.nyc/
+#https://oso.nyc/
+
+# figma
+#https://www.figma.com/proto/9aITbs6hlkJLzwiKeWlOM7/Travel---Tours--Copy-?page-id=0%3A1&node-id=1-2&scaling=scale-down-width
+#https://www.figma.com/proto/s8QpNsOJbaxnV57Lz3ue3M/My-Medi-Logs--Copy-?node-id=28-76
+
+#stores
+#https://play.google.com/store/apps/details?id=com.gohomie.app&hl=en&pli=1
+#https://apps.apple.com/ae/app/homie/id6450675083
