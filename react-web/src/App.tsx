@@ -26,10 +26,12 @@ import {
   Brush as FigmaIcon,
   PhoneAndroid as StoreIcon,
   BugReport as LogIcon,
+  PhotoLibrary as GalleryIcon,
 } from '@mui/icons-material';
 import WebScreenshots from './components/WebScreenshots';
 import FigmaScreenshots from './components/FigmaScreenshots';
 import StoreScreenshots from './components/StoreScreenshots';
+import Gallery from './components/Gallery';
 import ResultsPanel from './components/ResultsPanel';
 import LiveLogs from './components/LiveLogs';
 
@@ -132,6 +134,14 @@ function App() {
             <ListItemText primary="App Store Screenshots" />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setActiveTab(3)} selected={activeTab === 3}>
+            <ListItemIcon>
+              <GalleryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Gallery" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   );
@@ -157,6 +167,14 @@ function App() {
       case 2:
         return (
           <StoreScreenshots
+            onResultsUpdate={handleResultsUpdate}
+            onProcessingChange={handleProcessingChange}
+            sessionId={sessionId}
+          />
+        );
+      case 3:
+        return (
+          <Gallery
             onResultsUpdate={handleResultsUpdate}
             onProcessingChange={handleProcessingChange}
             sessionId={sessionId}
@@ -234,29 +252,34 @@ function App() {
           }}
         >
           <Container maxWidth="lg">
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h4" component="h1" gutterBottom>
-                Portfolio Screenshot Tool
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Capture screenshots and analyze web pages, Figma designs, and app store listings
-              </Typography>
-            </Box>
+            {/* Main title and description - Hide on Gallery page */}
+            {activeTab !== 3 && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                  Portfolio Screenshot Tool
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Capture screenshots and analyze web pages, Figma designs, and app store listings
+                </Typography>
+              </Box>
+            )}
 
-            {/* Live Logs Component */}
-            <LiveLogs isProcessing={isProcessing} />
+            {/* Live Logs Component - Hide on Gallery page */}
+            {activeTab !== 3 && <LiveLogs isProcessing={isProcessing} />}
 
             {/* Mobile Tabs */}
             <Paper sx={{ display: { xs: 'block', md: 'none' }, mb: 3 }}>
               <Tabs
                 value={activeTab}
                 onChange={handleTabChange}
-                variant="fullWidth"
+                variant="scrollable"
+                scrollButtons="auto"
                 sx={{ borderBottom: 1, borderColor: 'divider' }}
               >
                 <Tab icon={<WebIcon />} label="Web" />
                 <Tab icon={<FigmaIcon />} label="Figma" />
                 <Tab icon={<StoreIcon />} label="Store" />
+                <Tab icon={<GalleryIcon />} label="Gallery" />
               </Tabs>
             </Paper>
 
@@ -270,8 +293,8 @@ function App() {
               {renderActiveComponent()}
             </Box>
 
-            {/* Results Panel */}
-            {results.length > 0 && (
+            {/* Results Panel - Hide on Gallery page */}
+            {results.length > 0 && activeTab !== 3 && (
               <ResultsPanel results={results} isProcessing={isProcessing} />
             )}
           </Container>

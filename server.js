@@ -653,12 +653,158 @@ app.post('/api/store-screenshots', async (req, res) => {
   }
 });
 
+// Gallery API endpoint
+app.get('/api/gallery', (req, res) => {
+  try {
+    const projects = [];
+    const screenshotsDir = path.join(__dirname, 'screenshots');
+    
+    // Check if screenshots directory exists
+    if (!fs.existsSync(screenshotsDir)) {
+      return res.json({ projects: [] });
+    }
+
+    // Process each platform directory
+    const platforms = ['web', 'stores', 'figma'];
+    
+    platforms.forEach(platform => {
+      const platformDir = path.join(screenshotsDir, platform);
+      if (!fs.existsSync(platformDir)) return;
+
+      const platformFolders = fs.readdirSync(platformDir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+
+      platformFolders.forEach(folderName => {
+        const projectDir = path.join(platformDir, folderName);
+        
+        // Handle nested structure for store projects
+        let actualProjectDir = projectDir;
+        let projectFiles = fs.readdirSync(projectDir);
+        
+        // For store projects, check if there's a subfolder with the actual project
+        if (platform === 'stores') {
+          const subFolders = projectFiles
+            .filter(item => fs.statSync(path.join(projectDir, item)).isDirectory())
+            .map(item => item);
+          
+          if (subFolders.length > 0) {
+            // Use the first subfolder as the actual project directory
+            actualProjectDir = path.join(projectDir, subFolders[0]);
+            projectFiles = fs.readdirSync(actualProjectDir);
+          }
+        }
+        
+        // Find images (jpg, png, jpeg)
+        const images = projectFiles
+          .filter(file => /\.(jpg|jpeg|png)$/i.test(file))
+          .map(file => {
+            if (platform === 'stores' && actualProjectDir !== projectDir) {
+              // For store projects with nested structure
+              const subFolder = path.basename(actualProjectDir);
+              return `/screenshots/${platform}/${folderName}/${subFolder}/${file}`;
+            } else {
+              return `/screenshots/${platform}/${folderName}/${file}`;
+            }
+          })
+          .sort();
+
+        // Find info.json for additional metadata
+        let projectInfo = null;
+        const infoFile = projectFiles.find(file => file === 'info.json');
+        if (infoFile) {
+          try {
+            const infoPath = path.join(actualProjectDir, infoFile);
+            const infoContent = fs.readFileSync(infoPath, 'utf8');
+            projectInfo = JSON.parse(infoContent);
+          } catch (error) {
+            console.error(`Error reading info.json for ${folderName}:`, error);
+          }
+        }
+
+        // Find analysis file and parse it
+        let analysis = null;
+        let parsedAnalysis = null;
+        const analysisFile = projectFiles.find(file => file.includes('analysis_'));
+        if (analysisFile) {
+          try {
+            const analysisPath = path.join(actualProjectDir, analysisFile);
+            const analysisContent = fs.readFileSync(analysisPath, 'utf8');
+            analysis = analysisContent;
+            
+            // Parse the analysis content
+            const shortDescriptionMatch = analysis.match(/SHORT DESCRIPTION:\s*([\s\S]*?)(?=\n\n|\n[A-Z\s]+:|$)/i);
+            const detailedDescriptionMatch = analysis.match(/DETAILED DESCRIPTION:\s*([\s\S]*?)(?=\n\n|\n[A-Z\s]+:|$)/i);
+            const keyFeaturesMatch = analysis.match(/KEY FEATURES:\s*([\s\S]*?)(?=\n\n|\n[A-Z\s]+:|$)/i);
+            const techStackMatch = analysis.match(/TECH STACK:\s*([\s\S]*?)(?=\n\n|\n[A-Z\s]+:|$)/i);
+            
+            parsedAnalysis = {
+              shortDescription: shortDescriptionMatch ? shortDescriptionMatch[1].trim() : null,
+              detailedDescription: detailedDescriptionMatch ? detailedDescriptionMatch[1].trim() : null,
+              keyFeatures: keyFeaturesMatch ? 
+                keyFeaturesMatch[1]
+                  .split('\n')
+                  .filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
+                  .map(line => line.replace(/^[-•]\s*/, '').trim())
+                  .filter(line => line.length > 0)
+                  .slice(0, 10) : [],
+              techStack: techStackMatch ? techStackMatch[1].trim() : null,
+              isAnalyzed: true
+            };
+          } catch (error) {
+            console.error(`Error reading analysis for ${folderName}:`, error);
+          }
+        }
+
+        if (images.length > 0) {
+          // Extract project details
+          let title = folderName;
+          let url = '';
+          let description = '';
+          let keyFeatures = [];
+
+          if (projectInfo) {
+            title = projectInfo.title || folderName;
+            url = projectInfo.url || '';
+            description = projectInfo.description || '';
+          }
+
+          // Get folder creation time as timestamp
+          const stats = fs.statSync(actualProjectDir);
+          const timestamp = stats.birthtime.getTime();
+
+          projects.push({
+            id: `${platform}_${folderName}`,
+            title,
+            url,
+            description: description.length > 200 ? description.substring(0, 200) + '...' : description,
+            platform,
+            images,
+            keyFeatures: parsedAnalysis?.keyFeatures || keyFeatures,
+            folderPath: projectDir,
+            timestamp,
+            analysis: parsedAnalysis || { isAnalyzed: false }
+          });
+        }
+      });
+    });
+
+    // Sort projects by timestamp (newest first)
+    projects.sort((a, b) => b.timestamp - a.timestamp);
+
+    res.json({ projects });
+  } catch (error) {
+    console.error('Gallery API error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    apis: ['/api/web-screenshots', '/api/figma-screenshots', '/api/store-screenshots'],
+    apis: ['/api/web-screenshots', '/api/figma-screenshots', '/api/store-screenshots', '/api/gallery'],
     sse: '/api/logs'
   });
 });
@@ -699,6 +845,13 @@ app.get('/api/docs', (req, res) => {
         endpoint: 'GET /api/logs',
         description: 'Server-Sent Events endpoint for real-time logging',
         type: 'SSE'
+      },
+      'gallery': {
+        endpoint: 'GET /api/gallery',
+        description: 'Get all processed projects for the gallery view',
+        response: {
+          projects: 'Array of project objects with images, metadata, and analysis'
+        }
       }
     }
   });
