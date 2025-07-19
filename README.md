@@ -6,12 +6,17 @@ A powerful, automated website screenshot and AI analysis tool built with Puppete
 
 - 📸 **High-Quality Screenshots**: Full-page and viewport screenshots with enhanced loading detection
 - 🤖 **AI-Powered Analysis**: Comprehensive website analysis using GPT-4 Vision
-- 🔍 **Smart Link Crawling**: Automatically discovers and screenshots internal pages
+- 🔍 **Smart Link Crawling**: Automatically discovers and screenshots internal pages (up to 10)
 - 🎨 **Figma Support**: Capture screenshots from Figma files using API or browser methods
+- 📱 **App Store Integration**: Extract screenshots and metadata from Play Store and Apple App Store
 - 🛡️ **Anti-Detection**: Stealth mode with human-like headers and timing
 - ⚙️ **Configurable**: Customizable delays, quality settings, and analysis depth
 - 📊 **Multiple Output Formats**: JSON and CSV reports for easy data processing
-- 🎯 **Flexible Usage**: Screenshot-only mode or analysis-only mode
+- 🎯 **Flexible Usage**: Screenshot-only mode, analysis-only mode, or combined
+- 🌐 **RESTful APIs**: Three separate APIs for web, Figma, and app store screenshots
+- 🔄 **Deep Capture**: Automatically crawl and capture internal links from websites
+- ⏱️ **Smart Delays**: Random delays between requests to avoid rate limiting
+- 📁 **Structured Output**: Organized directory structure with project-based naming
 
 ## 🛠️ Installation
 
@@ -126,7 +131,7 @@ npm run full              # Screenshots + analysis
 | `--screenshots` | Take screenshots of all websites in urls.txt |
 | `--analyze` | Analyze homepage screenshots with AI (requires OpenAI API key) |
 
-### 🌐 API Server
+### 🌐 RESTful API Server
 
 Start the API server for remote access and integrations:
 
@@ -134,7 +139,7 @@ Start the API server for remote access and integrations:
 # Start API server
 npm start
 # or
-node api-server.js
+node server.js
 
 # Development mode
 npm run dev
@@ -144,109 +149,160 @@ npm run dev
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `POST /api/auth/token` | POST | Generate JWT access token |
-| `POST /api/screenshot` | POST | Process websites (screenshots/analysis) |
-| `GET /api/job/:jobId` | GET | Check job status and results |
-| `GET /api/jobs` | GET | List recent jobs |
+| `POST /api/web-screenshots` | POST | Capture screenshots from web URLs |
+| `POST /api/figma-screenshots` | POST | Capture screenshots from Figma URLs |
+| `POST /api/store-screenshots` | POST | Extract screenshots from app store URLs |
 | `GET /api/docs` | GET | API documentation |
 | `GET /health` | GET | Server health check |
 
-#### API Authentication
+#### API 1: Web Screenshots API
 
-1. **Get Access Token**:
-```bash
-curl -X POST http://localhost:3000/api/auth/token \
-  -H "x-api-key: your-api-key" \
-  -H "Content-Type: application/json" \
-  -d '{"userId": "your-user-id", "expiresIn": "24h"}'
-```
+**Endpoint**: `POST /api/web-screenshots`
 
-2. **Use Token for API Calls**:
-```bash
-curl -X POST http://localhost:3000/api/screenshot \
-  -H "Authorization: Bearer your-jwt-token" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "screenshots": true,
-    "analyze": true,
-    "urls": ["https://example.com", "https://github.com"]
-  }'
-```
+**Features**:
+- Capture full-page and viewport screenshots
+- Deep capture mode to crawl internal links (up to 10)
+- AI analysis with detailed reports
+- Configurable capture and analysis options
 
-#### API Request Examples
-
-**Process Multiple URLs (Array Format)**:
+**Request Body**:
 ```json
 {
-  "screenshots": true,
+  "urls": ["https://example.com", "https://oso.nyc/"],
   "analyze": true,
-  "urls": [
-    "https://example.com",
-    "https://github.com",
-    "https://stackoverflow.com"
-  ]
+  "deep_capture": true,
+  "capture": true
 }
 ```
 
-**Process URLs (Comma-Separated)**:
-```json
-{
-  "screenshots": true,
-  "analyze": false,
-  "urls": "https://example.com,https://github.com,https://stackoverflow.com"
-}
-```
-
-**Process URLs (Newline-Separated)**:
-```json
-{
-  "screenshots": false,
-  "analyze": true,
-  "urls": "https://example.com\nhttps://github.com\nhttps://stackoverflow.com"
-}
-```
-
-#### API Response Format
-
-```json
-{
-  "success": true,
-  "jobId": "job_1673123456_abc123",
-  "message": "Processing started",
-  "validUrls": ["https://example.com", "https://github.com"],
-  "invalidUrls": [],
-  "options": {
-    "screenshots": true,
-    "analyze": true,
-    "urlCount": 2
-  },
-  "estimatedTime": "60 seconds"
-}
-```
-
-#### Check Job Status
-
-```bash
-curl -H "Authorization: Bearer your-jwt-token" \
-  http://localhost:3000/api/job/job_1673123456_abc123
-```
+**Parameters**:
+- `urls` (required): Array of web URLs to process
+- `analyze` (optional): Enable AI analysis (default: false)
+- `deep_capture` (optional): Capture internal links (default: false)
+- `capture` (optional): Enable screenshot capture (default: true)
 
 **Response**:
 ```json
 {
   "success": true,
-  "status": "completed",
-  "results": {
-    "jobId": "job_1673123456_abc123",
-    "completedAt": "2024-01-15T10:30:45.000Z",
-    "results": [...],
-    "summary": {
-      "totalUrls": 2,
-      "successful": 2,
-      "failed": 0
+  "message": "Processed 2 web URLs",
+  "results": [
+    {
+      "url": "https://oso.nyc/",
+      "projectName": "oso",
+      "deepCapture": true,
+      "totalUrls": 8,
+      "screenshots": [
+        {
+          "url": "https://oso.nyc/",
+          "success": true,
+          "fullPage": "/path/to/home_full.jpg",
+          "viewport": "/path/to/home_viewport.jpg"
+        }
+      ],
+      "analysis": "AI analysis text...",
+      "analysisFile": "/path/to/analysis.txt"
     }
-  }
+  ]
 }
+```
+
+#### API 2: Figma Screenshots API
+
+**Endpoint**: `POST /api/figma-screenshots`
+
+**Features**:
+- Export individual layers as PNG images
+- Support for both API and browser methods
+- AI analysis of Figma designs
+- Configurable capture options
+
+**Request Body**:
+```json
+{
+  "urls": ["https://www.figma.com/proto/abc123/Design"],
+  "analyze": true,
+  "capture": true
+}
+```
+
+**Parameters**:
+- `urls` (required): Array of Figma URLs to process
+- `analyze` (optional): Enable AI analysis (default: false)
+- `capture` (optional): Enable screenshot capture (default: true)
+
+#### API 3: App Store Screenshots API
+
+**Endpoint**: `POST /api/store-screenshots`
+
+**Features**:
+- Extract screenshots from Play Store and Apple App Store
+- Get app metadata and information
+- AI analysis of app store listings
+- Support for both platforms
+
+**Request Body**:
+```json
+{
+  "urls": [
+    "https://play.google.com/store/apps/details?id=com.example.app",
+    "https://apps.apple.com/app/example-app/id123456789"
+  ],
+  "analyze": true,
+  "capture": true
+}
+```
+
+**Parameters**:
+- `urls` (required): Array of app store URLs to process
+- `analyze` (optional): Enable AI analysis (default: false)
+- `capture` (optional): Enable screenshot capture (default: true)
+
+#### API Usage Examples
+
+**Web Screenshots with Deep Capture**:
+```bash
+curl -X POST http://localhost:3000/api/web-screenshots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://oso.nyc/"],
+    "deep_capture": true,
+    "analyze": true,
+    "capture": true
+  }'
+```
+
+**Figma Screenshots**:
+```bash
+curl -X POST http://localhost:3000/api/figma-screenshots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://www.figma.com/proto/abc123/Design"],
+    "analyze": true,
+    "capture": true
+  }'
+```
+
+**App Store Screenshots**:
+```bash
+curl -X POST http://localhost:3000/api/store-screenshots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://play.google.com/store/apps/details?id=com.example.app"],
+    "analyze": true,
+    "capture": true
+  }'
+```
+
+**Analysis Only (No Screenshots)**:
+```bash
+curl -X POST http://localhost:3000/api/web-screenshots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://oso.nyc/"],
+    "capture": false,
+    "analyze": true
+  }'
 ```
 
 ## 📁 Output Structure
@@ -271,18 +327,34 @@ screenshots/
 ### API Mode Output
 ```
 screenshots/
-├── api-results/
-│   ├── job_1673123456_abc123.json         # 🆕 API Job Results
-│   ├── job_1673123789_def456.json         # 🆕 API Job Results
-│   └── job_1673123999_ghi789.json         # 🆕 API Job Results
-├── example-com/
-│   ├── home_full_1673123456.jpg           # Homepage full screenshot
-│   ├── home_viewport_1673123456.jpg       # Homepage viewport screenshot
-│   └── example-com_analysis_2024-01-15.txt # 🤖 AI Analysis Report (API Generated)
-└── github-com/
-    ├── home_full_1673123456.jpg
-    ├── home_viewport_1673123456.jpg
-    └── github-com_analysis_2024-01-15.txt
+├── web/
+│   ├── oso/
+│   │   ├── home_full_1752938608.jpg
+│   │   ├── home_viewport_1752938608.jpg
+│   │   ├── about_us_full_1752938635.jpg
+│   │   ├── about_us_viewport_1752938635.jpg
+│   │   ├── services_full_1752938657.jpg
+│   │   ├── services_viewport_1752938657.jpg
+│   │   └── analysis_2025-07-19T15-30-15-144Z.txt
+├── figma/
+│   ├── Travel___Tours__Copy_/
+│   │   ├── Page_1 - Home_page_.png
+│   │   └── Page_1 - Frame_1.png
+│   └── My_Medi_Logs__Copy_/
+│       ├── iPhone_16_Pro_Max_-_1.png
+│       ├── iPhone_16_Pro_Max_-_2.png
+│       └── ...
+└── stores/
+    ├── playstore_com.gohomie.app/
+    │   └── PlayStore-Homie/
+    │       ├── screenshot_1.jpg
+    │       ├── screenshot_2.jpg
+    │       └── ...
+    └── appstore_6450675083/
+        └── AppStore-Homie/
+            ├── screenshot_1.jpg
+            ├── screenshot_2.jpg
+            └── ...
 ```
 
 ## ⚙️ Configuration
@@ -311,9 +383,33 @@ const AI_CONFIG = {
 | `crawlInternalLinks` | `true` | Discover and screenshot internal pages |
 | `generateImages` | `false` | Generate AI variations using DALL-E |
 
+## 🔍 Deep Capture Features
+
+The deep capture functionality automatically discovers and captures internal links from websites:
+
+### How It Works
+1. **Link Discovery**: Crawls the main page to find internal links
+2. **Smart Filtering**: Filters out external links, anchors, and duplicates
+3. **Limit Control**: Captures up to 10 internal links maximum
+4. **Structured Output**: Organizes screenshots by page type
+5. **Delay Management**: Adds 5-second delays between captures
+
+### Deep Capture Example
+```bash
+curl -X POST http://localhost:3000/api/web-screenshots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://oso.nyc/"],
+    "deep_capture": true,
+    "analyze": false
+  }'
+```
+
+**Output**: Captures homepage + about, services, portfolio, contact, etc.
+
 ## 🤖 AI Analysis Features
 
-When using `--analyze`, the tool provides comprehensive reports including:
+When using `--analyze` or `analyze: true`, the tool provides comprehensive reports including:
 
 ### 📝 Analysis Sections
 - **Short Description**: Concise 1-2 sentence summary
@@ -396,12 +492,29 @@ Generated by Portfolio Screenshot Tool
 - Check that URLs are accessible (not behind authentication)
 - Ensure sufficient disk space for screenshots
 
+**Deep capture not working:**
+- Check if the website allows crawling
+- Verify internal links are properly formatted
+- Ensure the website doesn't block automated access
+
+**Figma API errors:**
+- Verify your Figma personal access token is valid
+- Check if the file is accessible with your token
+- Ensure the file is not private or restricted
+
+**App Store extraction fails:**
+- Verify the app store URLs are valid and accessible
+- Check if the app is available in the specified region
+- Ensure the app store doesn't block automated access
+
 ### Performance Tips
 
 - **Faster Processing**: Set `enhancedLoading: false` and `preScreenshotDelay: 1000`
 - **Higher Quality**: Increase `preScreenshotDelay` to 5000+ for complex sites
 - **Batch Processing**: Process large URL lists in smaller chunks
 - **Memory Usage**: Screenshots are high-resolution; monitor disk space
+- **Deep Capture**: Use sparingly as it can generate many screenshots
+- **API Rate Limits**: Add delays between requests to avoid being blocked
 
 ## 📋 Requirements
 
@@ -415,7 +528,9 @@ Generated by Portfolio Screenshot Tool
   "csv-writer": "^1.6.0",
   "cli-progress": "^3.12.0",
   "openai": "^4.20.0",
-  "dotenv": "^16.3.1"
+  "dotenv": "^16.3.1",
+  "express": "^4.18.2",
+  "cors": "^2.8.5"
 }
 ```
 
@@ -459,6 +574,9 @@ If you need any help, contact at:
 - **Design Research**: Collect visual inspiration and patterns
 - **Quality Assurance**: Automated visual regression testing
 - **Client Reports**: Generate professional analysis reports
+- **App Store Research**: Analyze competitor apps and their store presence
+- **Figma Design Documentation**: Export and analyze design prototypes
+- **Deep Website Analysis**: Comprehensive internal page documentation
 
 ---
 
