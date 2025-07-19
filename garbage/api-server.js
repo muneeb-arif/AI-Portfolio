@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Import screenshot functionality
-const { processWebsiteAPI, validateUrls } = require('./screenshot-api');
+const { processWebsiteAPI, validateUrls } = require('../screenshot-api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

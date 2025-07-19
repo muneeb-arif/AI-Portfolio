@@ -7,6 +7,7 @@ A powerful, automated website screenshot and AI analysis tool built with Puppete
 - 📸 **High-Quality Screenshots**: Full-page and viewport screenshots with enhanced loading detection
 - 🤖 **AI-Powered Analysis**: Comprehensive website analysis using GPT-4 Vision
 - 🔍 **Smart Link Crawling**: Automatically discovers and screenshots internal pages
+- 🎨 **Figma Support**: Capture screenshots from Figma files using API or browser methods
 - 🛡️ **Anti-Detection**: Stealth mode with human-like headers and timing
 - ⚙️ **Configurable**: Customizable delays, quality settings, and analysis depth
 - 📊 **Multiple Output Formats**: JSON and CSV reports for easy data processing
@@ -45,6 +46,9 @@ OPENAI_API_KEY=your-openai-api-key-here
 API_KEY=your-secure-api-key-here
 JWT_SECRET=your-jwt-secret-key-here
 
+# Optional - for Figma API access (recommended for private files):
+FIGMA_PERSONAL_TOKEN=your-figma-personal-access-token-here
+
 # Optional:
 REPLICATE_API_TOKEN=your-replicate-api-token-here
 PORT=3000
@@ -59,6 +63,35 @@ https://stackoverflow.com
 # Comments start with #
 https://your-website.com" > urls.txt
 ```
+
+## 🎨 Figma Support
+
+The tool includes enhanced support for capturing screenshots from Figma files:
+
+### Method 1: API Method (Recommended for Private Files)
+```bash
+# Use the dedicated Figma API tool
+node figma-api.js "https://www.figma.com/file/abc123/Design-System"
+
+# Or add Figma URLs to urls.txt for batch processing
+echo "https://www.figma.com/proto/xyz789/Prototype?node-id=0%3A1" >> urls.txt
+```
+
+**Requirements:**
+- `FIGMA_PERSONAL_TOKEN` in your `.env` file
+- File must be accessible with your token
+
+### Method 2: Browser Method (Works with Public Files)
+```bash
+# Use the browser-based Figma tool
+node figma-test.js "https://www.figma.com/proto/abc123/Prototype"
+```
+
+### Setup Figma API Access
+See [FIGMA_API_SETUP.md](FIGMA_API_SETUP.md) for detailed instructions on:
+- Getting a personal access token
+- Setting up file permissions
+- Troubleshooting common issues
 
 ## 🎯 Usage
 
